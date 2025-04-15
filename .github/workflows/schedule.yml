@@ -1,0 +1,28 @@
+name: Run YouTube Scraper
+
+on:
+  schedule:
+    - cron: '0 19 * * *'  # 한국시간 새벽 4시 (UTC 19시)
+  workflow_dispatch:       # 수동 실행도 가능하게 함
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Create credentials file
+        run: echo \"${{ secrets.GOOGLE_CREDENTIALS_JSON }}\" > your-credentials.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run script
+        run: node index.js
