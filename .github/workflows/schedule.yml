@@ -19,7 +19,10 @@ jobs:
           node-version: 18
       
       - name: Create credentials file
-        run: echo "${{ secrets.GOOGLE_CREDENTIALS_BASE64 }}" | base64 -d > your-credentials.json
+        shell: bash
+        run: |
+          echo "${{ secrets.GOOGLE_CREDENTIALS_BASE64 }}" | base64 --decode > your-credentials.json
+
         
       - name: Install dependencies
         run: npm install
