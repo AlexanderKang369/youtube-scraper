@@ -64,6 +64,22 @@ async function runTasksWithConcurrency(tasks, maxConcurrent) {
   return Promise.all(results);
 }
 
+async function runWithRetry(task, retries = 2, delayMs = 5000) {
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      return await task();
+    } catch (e) {
+      console.error(`❌ 시도 ${attempt} 실패: ${e.message}`);
+      if (attempt <= retries) {
+        console.log(`⏳ ${delayMs / 1000}초 후 재시도...`);
+        await new Promise(res => setTimeout(res, delayMs));
+      } else {
+        console.log('❌ 최대 재시도 횟수를 초과했습니다.');
+      }
+    }
+  }
+}
+
 async function run() {
   const auth = new google.auth.GoogleAuth({
     keyFile: CREDENTIALS_PATH,
@@ -86,7 +102,7 @@ async function run() {
 
       if (!videoUrl || (!videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be'))) return;
 
-      try {
+      await runWithRetry(async () => {
         const topLikes = await getTop5Likes(videoUrl);
         const values = topLikes.map(c => [c.likes]);
         const resultRange = `${SHEET_NAME}!L${baseRow}:L${baseRow + 4}`;
@@ -128,9 +144,7 @@ async function run() {
         }
 
         console.log(`✅ ${baseRow}행 완료: ${values.map(v => v[0]).join(', ')}`);
-      } catch (e) {
-        console.log(`❌ 오류 (${baseRow}행): ${e.message}`);
-      }
+      });
     };
   });
 
