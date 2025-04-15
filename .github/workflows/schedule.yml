@@ -17,10 +17,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
+      
       - name: Create credentials file
-        run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > your-credentials.json
-
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_BASE64 }}" | base64 -d > your-credentials.json
+        
       - name: Install dependencies
         run: npm install
 
