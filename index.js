@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 
 const SPREADSHEET_ID = '1JJtros9arFArV7MeGasfedQ8cfa1QoKKz8m8EBynYuE';
 const SHEET_NAME = '유튜브 댓글';
-const START_ROW = 8;
+const START_ROW = 9;
 const CREDENTIALS_PATH = './your-credentials.json';
 const BLOCK_KEYWORDS = ['상원']; // 여기에 제외 단어 추가
 const SHEET_ID = 726863310; // 시트 고유 숫자 ID (필요)
