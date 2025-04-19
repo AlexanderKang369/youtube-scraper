@@ -5,33 +5,24 @@ const SPREADSHEET_ID = '1JJtros9arFArV7MeGasfedQ8cfa1QoKKz8m8EBynYuE';
 const SHEET_NAME = '유튜브 댓글';
 const START_ROW = 9;
 const CREDENTIALS_PATH = './your-credentials.json';
-const BLOCK_KEYWORDS = ['상원']; // 여기에 제외 단어 추가
-const SHEET_ID = 726863310; // 시트 고유 숫자 ID (필요)
+const BLOCK_KEYWORDS = ['상원'];
+const SHEET_ID = 726863310;
 
 async function getTop5Likes(videoUrl) {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage();
-  await page.goto(videoUrl, { waitUntil: 'networkidle2' });
 
-  // Shorts 페이지 구조 대응
   const isShorts = videoUrl.includes('/shorts/');
+  const finalUrl = isShorts ? videoUrl.replace('/shorts/', '/watch?v=') : videoUrl;
 
-  if (isShorts) {
-    await page.setViewport({ width: 390, height: 844 });
-    await page.evaluate(async () => {
-      for (let i = 0; i < 5; i++) {
-        window.scrollBy(0, 500);
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    });
-  } else {
-    await page.evaluate(async () => {
-      for (let i = 0; i < 10; i++) {
-        window.scrollBy(0, window.innerHeight);
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    });
-  }
+  await page.goto(finalUrl, { waitUntil: 'networkidle2' });
+
+  await page.evaluate(async () => {
+    for (let i = 0; i < 10; i++) {
+      window.scrollBy(0, window.innerHeight);
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  });
 
   const comments = await page.evaluate(() => {
     const items = document.querySelectorAll('ytd-comment-thread-renderer');
@@ -56,7 +47,6 @@ async function getTop5Likes(videoUrl) {
       isFlagged: BLOCK_KEYWORDS.some(keyword => c.text.includes(keyword))
     }));
 }
-
 
 async function runTasksWithConcurrency(tasks, maxConcurrent) {
   const running = new Set();
@@ -163,7 +153,7 @@ async function run() {
   });
 
   console.log(`🚀 총 ${tasks.length}개 영상 병렬 처리 시작...`);
-  await runTasksWithConcurrency(tasks, 5); // 동시 최대 5개
+  await runTasksWithConcurrency(tasks, 5);
   console.log('🎉 모든 유튜브 영상 처리 완료!');
 }
 
