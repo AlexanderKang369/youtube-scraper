@@ -31,18 +31,25 @@ async function getTop5Likes(videoUrl) {
       const likesText = el.querySelector('#vote-count-middle')?.innerText?.trim() || '0';
 
       const likes = (() => {
-        const normalized = likesText
-          .replace(/\s/g, '')
-          .replace('좋아요', '')
-          .replace(',', '')
-          .replace(/K/i, '000')
-          .replace('만', '0000')
-          .replace('천', '000')
-          .replace('M', '000000');
+        const cleaned = likesText.replace(/\s|,|좋아요/g, '');
       
-        const parsed = parseInt(normalized.replace(/[^\d]/g, ''));
+        if (cleaned.includes('천')) {
+          return Math.round(parseFloat(cleaned.replace('천', '')) * 1000);
+        }
+        if (cleaned.includes('만')) {
+          return Math.round(parseFloat(cleaned.replace('만', '')) * 10000);
+        }
+        if (/[Kk]/.test(cleaned)) {
+          return Math.round(parseFloat(cleaned.replace(/[Kk]/, '')) * 1000);
+        }
+        if (/[Mm]/.test(cleaned)) {
+          return Math.round(parseFloat(cleaned.replace(/[Mm]/, '')) * 1000000);
+        }
+      
+        const parsed = parseInt(cleaned.replace(/[^\d]/g, ''));
         return isNaN(parsed) ? 0 : parsed;
       })();
+      
       
 
       return { text, likes };
