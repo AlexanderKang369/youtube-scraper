@@ -31,15 +31,19 @@ async function getTop5Likes(videoUrl) {
       const likesText = el.querySelector('#vote-count-middle')?.innerText?.trim() || '0';
 
       const likes = (() => {
-        if (likesText.includes('천')) {
-          return parseInt(parseFloat(likesText.replace('천', '')) * 1000);
-        }
-        if (likesText.includes('만')) {
-          return parseInt(parseFloat(likesText.replace('만', '')) * 10000);
-        }
-        const parsed = parseInt(likesText.replace(/[^\d]/g, ''));
+        const normalized = likesText
+          .replace(/\s/g, '')
+          .replace('좋아요', '')
+          .replace(',', '')
+          .replace(/K/i, '000')
+          .replace('만', '0000')
+          .replace('천', '000')
+          .replace('M', '000000');
+      
+        const parsed = parseInt(normalized.replace(/[^\d]/g, ''));
         return isNaN(parsed) ? 0 : parsed;
       })();
+      
 
       return { text, likes };
     });
