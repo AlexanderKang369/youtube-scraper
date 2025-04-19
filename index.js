@@ -13,12 +13,25 @@ async function getTop5Likes(videoUrl) {
   const page = await browser.newPage();
   await page.goto(videoUrl, { waitUntil: 'networkidle2' });
 
-  await page.evaluate(async () => {
-    for (let i = 0; i < 10; i++) {
-      window.scrollBy(0, window.innerHeight);
-      await new Promise(r => setTimeout(r, 1000));
-    }
-  });
+  // Shorts 페이지 구조 대응
+  const isShorts = videoUrl.includes('/shorts/');
+
+  if (isShorts) {
+    await page.setViewport({ width: 390, height: 844 });
+    await page.evaluate(async () => {
+      for (let i = 0; i < 5; i++) {
+        window.scrollBy(0, 500);
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    });
+  } else {
+    await page.evaluate(async () => {
+      for (let i = 0; i < 10; i++) {
+        window.scrollBy(0, window.innerHeight);
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    });
+  }
 
   const comments = await page.evaluate(() => {
     const items = document.querySelectorAll('ytd-comment-thread-renderer');
@@ -43,6 +56,7 @@ async function getTop5Likes(videoUrl) {
       isFlagged: BLOCK_KEYWORDS.some(keyword => c.text.includes(keyword))
     }));
 }
+
 
 async function runTasksWithConcurrency(tasks, maxConcurrent) {
   const running = new Set();
