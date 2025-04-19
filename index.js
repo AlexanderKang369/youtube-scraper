@@ -29,9 +29,18 @@ async function getTop5Likes(videoUrl) {
     return Array.from(items).map(el => {
       const text = el.querySelector('#content-text')?.innerText || '';
       const likesText = el.querySelector('#vote-count-middle')?.innerText?.trim() || '0';
-      const likes = likesText.includes('천')
-        ? parseInt(parseFloat(likesText.replace('천', '')) * 1000)
-        : parseInt(likesText.replace(/[^\d]/g, '')) || 0;
+
+      const likes = (() => {
+        if (likesText.includes('천')) {
+          return parseInt(parseFloat(likesText.replace('천', '')) * 1000);
+        }
+        if (likesText.includes('만')) {
+          return parseInt(parseFloat(likesText.replace('만', '')) * 10000);
+        }
+        const parsed = parseInt(likesText.replace(/[^\d]/g, ''));
+        return isNaN(parsed) ? 0 : parsed;
+      })();
+
       return { text, likes };
     });
   });
@@ -47,6 +56,8 @@ async function getTop5Likes(videoUrl) {
       isFlagged: BLOCK_KEYWORDS.some(keyword => c.text.includes(keyword))
     }));
 }
+
+// 나머지 runWithRetry, runTasksWithConcurrency, run 함수는 동일 유지
 
 async function runTasksWithConcurrency(tasks, maxConcurrent) {
   const running = new Set();
